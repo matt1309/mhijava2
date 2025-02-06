@@ -58,6 +58,7 @@ aircon.printDeviceData();
 ---
 
 ## List of Operation Modes
+(I think the below is wrong), will update when I work out which numbers which. Pretty sure 2 is heat. 
 
 | Mode | Description |
 |------|-------------|
@@ -80,7 +81,7 @@ aircon.printDeviceData();
 
 ---
 
-## List of `get`/`set` Methods and Available Attributes
+## List of `get`/`set` Methods and Available Attributes. Set functions return bool, true if a change was made, false if nothing changed. 
 
 ```java
 // Gets the hostname of the aircon unit
