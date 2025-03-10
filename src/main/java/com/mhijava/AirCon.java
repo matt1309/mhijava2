@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //import java.util.HashMap;
@@ -28,6 +29,12 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
 import org.json.JSONObject;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class AirCon {
 
@@ -657,7 +664,7 @@ public class AirCon {
             // System.out.println("contentsJSON: " + contentsJSON.toString());
             data.put("contents", new JSONObject(contents));
         }
-
+/*
         synchronized (lock) {
             CloseableHttpClient httpClient = null;
             JSONObject jsonResponse = null;
@@ -701,7 +708,49 @@ public class AirCon {
             }
             return jsonResponse; // Return jsonResponse outside the try-catch block
         }
+    */
+    
+    synchronized (lock) {
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(timeout, TimeUnit.SECONDS)
+                .readTimeout(timeout, TimeUnit.SECONDS)
+                .build();
+        JSONObject jsonResponse = null;
+        try {
+            if (nextRequestAfter == null) {
+                nextRequestAfter = LocalDateTime.now();
+            }
+            long waitTime = Duration.between(LocalDateTime.now(), nextRequestAfter).getSeconds();
+            if (waitTime > 0) {
+                Thread.sleep(waitTime * 1000);
+            }
+    
+            RequestBody body = RequestBody.create(data.toString(), MediaType.get("application/json; charset=utf-8"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+    
+            try (Response response = httpClient.newCall(request).execute()) {
+                String responseString = response.body().string();
+                System.out.println("Received response from aircon: " + responseString);
+                jsonResponse = new JSONObject(responseString);
+            }
+    
+            nextRequestAfter = LocalDateTime.now().plusSeconds(minrefreshRate);
+            setstatus(true);
+        } catch (Exception e) {
+            setstatus(false);
+            System.out.println(e.toString());
+        }
+        return jsonResponse; // Return jsonResponse outside the try-catch block
     }
+  
+
+
+
+
+}
 
     public String getInfo() throws Exception {
         JSONObject result = post("getDeviceInfo", null);
