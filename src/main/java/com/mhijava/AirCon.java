@@ -54,6 +54,7 @@ public class AirCon {
     private String DeviceID = "f9276726d8e7";
     private String OperatorID = "openhab";
     private String AirConID = "f9276726d8e7";
+    private String name = "";
     public int timeout = 5000;
 
     // private MqttAirConBridge mqttService;
@@ -62,7 +63,7 @@ public class AirCon {
     String firmware;
     int connectedAccounts = -1;
 
-    private boolean outdoorTemperature;
+    
     private Boolean Operation = false;
     private int OperationMode = -1;
     private int AirFlow = -1;
@@ -85,23 +86,6 @@ public class AirCon {
     private LocalDateTime nextRequestAfter;
     private long minrefreshRate = 1L;
 
-    /*
-     * public boolean mqttStart(String mqttHostname,MqttAirConBridge mqttService){
-     * 
-     * try {
-     * this.mqttService = mqttService;
-     * mqttService.startPublishing(this);
-     * // mqttService.t
-     * return true;
-     * } catch (Exception e) {
-     * 
-     * System.out.println(e.toString());
-     * return false;
-     * }
-     * 
-     * 
-     * }
-     */
 
     // ----------------// Synchronised methods for getting and setting variables, to
     // add some basic level of thread safety. //----------------//
@@ -112,10 +96,27 @@ public class AirCon {
         }
     }
 
+    public String getname() {
+        synchronized (lock) {
+            return name;
+        }
+    }
+
     public boolean sethostname(String hostname) {
         synchronized (lock) {
             if (!this.hostname.equals(hostname)) {
                 this.hostname = hostname;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public boolean setname(String name) {
+        synchronized (lock) {
+            if (!this.name.equals(name)) {
+                this.name = name;
                 return true;
             } else {
                 return false;
@@ -242,22 +243,6 @@ public class AirCon {
         }
     }
 
-    public boolean getOutdoorTemperature() {
-        synchronized (lock) {
-            return outdoorTemperature;
-        }
-    }
-
-    public boolean setOutdoorTemperature(boolean outdoorTemperature) {
-        synchronized (lock) {
-            if (this.outdoorTemperature != outdoorTemperature) {
-                this.outdoorTemperature = outdoorTemperature;
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
 
     public Boolean getOperation() {
         synchronized (lock) {
@@ -590,9 +575,7 @@ public class AirCon {
         if (getconnectedAccounts() != 0) {
             System.out.println("Connected Accounts: " + getconnectedAccounts());
         }
-        if (getOutdoorTemperature()) {
-            System.out.println("Outdoor Temperature: " + getOutdoorTemperature());
-        }
+       
         if (getOperation() != null) {
             System.out.println("Operation: " + getOperation());
         }
